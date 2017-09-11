@@ -6,7 +6,7 @@ import numpy as np
 
 def main():
 #==============Process Data==================================
-#Get rid of the first column, may not be needed
+	#Get rid of the first column, may not be needed
 	with open('dt-data.txt', 'r') as f:
 		filedata = f.read()
 	filedata = filedata.replace(':', ',')
@@ -20,19 +20,28 @@ def main():
 	#classification column
 	targetClass = data[:,6]	
 
-	#Create Tuples of (feature, classification)
-	occupiedTup = zip(data[:,0], targetClass)
-	priceTup = zip(data[:,1], targetClass);
-	musicTup = zip(data[:,2], targetClass);
-	locationTup = zip(data[:,3], targetClass);
-	vipTup = zip(data[:,4], targetClass);
-	beerTup = zip(data[:,5], targetClass);
+	# #Create Tuples of (feature, classification)
+	# occupiedTup = zip(data[:,0], targetClass)
+	# priceTup = zip(data[:,1], targetClass);
+	# musicTup = zip(data[:,2], targetClass);
+	# locationTup = zip(data[:,3], targetClass);
+	# vipTup = zip(data[:,4], targetClass);
+	# beerTup = zip(data[:,5], targetClass);
+	# entireSet = occupiedTup + priceTup + musicTup + locationTup + vipTup + beerTup
+	# indices = [1,3,5]
 
-	print priceTup
+	# newSet = [targetClass[i] for i in indices];
 
+ # 	arr, count = np.unique(newSet, return_counts=True)
+
+	
+
+	
 #=============Method Definitions===========================
-def entropy(s):
+def entropy(indices, currSet):
+
 	sum = 0;
+	classSubSet = [currSet[i] for i in indices]
 	uniqueArr, counts = np.unique(s, return_counts=True)
 	freq = counts.astype('float')/len(s)
 
@@ -42,7 +51,9 @@ def entropy(s):
 	return sum
 
 def informationGain(s, att):
+    
 	entropySet = entropy(s)
+
 	branches, counts = np.unique(att, return_counts=True)
 	print branches, counts
 
