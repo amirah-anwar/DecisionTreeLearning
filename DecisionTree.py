@@ -20,42 +20,40 @@ def main():
 	#classification column
 	targetClass = data[:,6]	
 
-	# #Create Tuples of (feature, classification)
-	# occupiedTup = zip(data[:,0], targetClass)
-	# priceTup = zip(data[:,1], targetClass);
-	# musicTup = zip(data[:,2], targetClass);
-	# locationTup = zip(data[:,3], targetClass);
-	# vipTup = zip(data[:,4], targetClass);
-	# beerTup = zip(data[:,5], targetClass);
-	# entireSet = occupiedTup + priceTup + musicTup + locationTup + vipTup + beerTup
-	# indices = [1,3,5]
-
-	# newSet = [targetClass[i] for i in indices];
-
- # 	arr, count = np.unique(newSet, return_counts=True)
-
-	
-
+	print informationGain(targetClass, data[:,0])
 	
 #=============Method Definitions===========================
-def entropy(indices, currSet):
+def entropy(currSet, indices):
 
-	sum = 0;
+	sum = 0.0;
+	#Get the classification subset based on indices[]
 	classSubSet = [currSet[i] for i in indices]
-	uniqueArr, counts = np.unique(s, return_counts=True)
-	freq = counts.astype('float')/len(s)
-
+	uniqueArr, counts = np.unique(classSubSet, return_counts=True)
+	freq = counts.astype('float')/len(indices)
+	#Calculate the entropy of this classification subset
 	for p in freq:
 		if p != 0.0:
 			sum += -p*np.log2(p)
 	return sum
 
 def informationGain(s, att):
-    
-	entropySet = entropy(s)
+	oldEntropy = entropy(s, range(len(s)))
 
-	branches, counts = np.unique(att, return_counts=True)
-	print branches, counts
+	iDic = {}
+	newEntropy = 0.0;
+	#Set up dicitonary for (val, idicies)
+	for i in range(len(att)):
+		val = att[i]
+		if val not in iDic:
+			iDic[val] = [i]
+		else:
+			iDic[val].append(i)
+	#Calculate information gain 
+	for key in iDic:
+		val = iDic[key]
+		p_i = (float(len(val))/float(len(s)))
+		newEntropy += p_i*entropy(s, val)
+	return oldEntropy - newEntropy
 
 if __name__ == "__main__":
     main()
