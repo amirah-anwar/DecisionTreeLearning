@@ -1,4 +1,4 @@
-(Occupied, Price, Music, Location, VIP, Favorite Beer, Enjoy)
+h,  Occupied, Price, Music, Location, VIP, Favorite Beer, Enjoy,  
 
 01,  High, Expensive, Loud, Talpiot, No, No, No, 
 02,  High, Expensive, Loud, City-Center, Yes, No, Yes, 

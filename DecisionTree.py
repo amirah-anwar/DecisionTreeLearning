@@ -11,18 +11,40 @@ def main():
 		filedata = f.read()
 	filedata = filedata.replace(':', ',')
 	filedata = filedata.replace(';', ', ')
+	filedata = filedata.replace('(', 'h,  ')
+	filedata = filedata.replace(')', ', ')
 
 	with open('dt-data.txt', 'w') as f:
 		f.write(filedata)
 
 	#load txt file into a ndarray
-	data = np.loadtxt('dt-data.txt', dtype='string', comments='(', delimiter=', ', usecols=(1,2,3,4,5,6,7))
+	data = np.loadtxt('dt-data.txt', dtype='string', delimiter=', ', usecols=(1,2,3,4,5,6,7))
 	#classification column
-	targetClass = data[:,6]	
+	targetClass = data[:,6]			
 
-	print informationGain(targetClass, data[:,0])
+	#print informationGain(targetClass, data[:,0])
+	print(partitionSet(data, 0))
+	#print data
 	
 #=============Method Definitions===========================
+def partitionSet(table, colIndex):
+	#select the specified colum
+	selectedCol = table[:, colIndex]
+	#Count the number of unique occurances and return an array of indices
+	dic = {}
+	listOfIndices = []
+	for i in range(len(selectedCol)):
+		val = selectedCol[i]
+		if val not in dic:
+			if i != 0:
+				dic[val] = [i]
+		else:
+			dic[val].append(i)
+
+	for key in dic:
+	    listOfIndices.append(dic[key])
+	return listOfIndices
+
 def entropy(currSet, indices):
 
 	sum = 0.0;
@@ -36,7 +58,13 @@ def entropy(currSet, indices):
 			sum += -p*np.log2(p)
 	return sum
 
-def informationGain(s, att):
+def informationGain(target, attr):
+	#Ignore the first row i = 0 as this is attribute names
+	s = target.tolist()
+	del s[0]
+	att = attr.tolist()
+	del att[0]
+
 	oldEntropy = entropy(s, range(len(s)))
 
 	iDic = {}
