@@ -17,10 +17,12 @@ def main():
         f.write(filedata)
 
     # load txt file into a ndarray
-    data = np.loadtxt('dt-data.txt', dtype='string', comments='(', delimiter=', ', usecols=(1, 2))
+    temp_data = np.loadtxt('dt-data.txt', dtype='string', comments='(', delimiter=', ', usecols=(1, 2, 3))
+    data = np.insert(temp_data, 0, ['Occupied', 'VIP', 'Enjoy'], axis=0)
+    print data
     # classification column
-    targetClass = data[:, 1]
-
+    targetClass = data[:, 2]
+ 
     # Create Tuples of (feature, classification)
     # occupiedTup = zip(data[:, 0], targetClass)
     # priceTup = zip(data[:, 1], targetClass)
@@ -30,56 +32,75 @@ def main():
     # beerTup = zip(data[:, 5], targetClass)
 
     attrs = data[:, 0:2]
-    print attrs
+    print attrs.T
     print targetClass
-    buildTree(attrs,targetClass)
-
+    result = buildTree(attrs,targetClass)
+    print result
 
 # =============Method Definitions===========================
 def buildTree(attrs, target):
+
+	if len(set(target)) == 1 or len(target) == 0:
+        return target
+
     gain = []
     for attr in attrs.T:
        gain.append(informationGain(target, attr))
        print gain
+
     selected_attr_index = np.argmax(gain)
 
     print selected_attr_index
 
-    selected_attr_values, counts= np.unique(attrs[:,selected_attr_index], return_counts=True)
-    attrs_subset = []
-    for attr in attrs.T
-    	if(attr==selected_attr_values[i])
-    		attrs_subset.append(attrs[:,i])
+    indices = partitonSet(attrs, selected_attr_index)
+    temp_attrs = []
 
-    print selected_attr_values
-    print counts
-    print attrs_subset
+  	for index in indices:
+  		temp = attrs.take(index)
+  		temp_attrs_final = np.delete(temp, selected_attr_index, axis=1)
+  		temp_attrs.append(temp_attrs_final)
 
-    # buildTree(attrs_subset, target_subset)
+  	for arr in temp_attrs
+   		attrs_subset = arr[:, 0:len(arr)-1]
+   		target_subset = arr[:, len(arr)-1]
+   		result.append(arr[0,selected_attr_index])
+   		print attrs_subset
+    	print target_subset
+   		buildTree(attrs_subset, target_subset)
 
-def entropy(s):
-    res = 0
-    val, counts = np.unique(s, return_counts=True)
-    freqs = counts.astype('float') / len(s)
-    for p in freqs:
-        if p != 0.0:
-            res -= p * np.log2(p)
-    return res
+    return result.append(attrs[0,selected_attr_index])
 
+def entropy(currSet, indices):
 
-def informationGain(x, y):
-    res = entropy(y)
+	sum = 0.0;
+	#Get the classification subset based on indices[]
+	classSubSet = [currSet[i] for i in indices]
+	uniqueArr, counts = np.unique(classSubSet, return_counts=True)
+	freq = counts.astype('float')/len(indices)
+	#Calculate the entropy of this classification subset
+	for p in freq:
+		if p != 0.0:
+			sum += -p*np.log2(p)
+	return sum
 
-    # We partition x, according to attribute values x_i
-    val, counts = np.unique(x, return_counts=True)
-    freqs = counts.astype('float') / len(x)
+def informationGain(s, att):
+	oldEntropy = entropy(s, range(len(s)))
 
-    # We calculate a weighted average of the entropy
-    for p, v in zip(freqs, val):
-        res -= p * entropy(y[x == v])
-
-    return res
-
+	iDic = {}
+	newEntropy = 0.0;
+	#Set up dicitonary for (val, idicies)
+	for i in range(len(att)):
+		val = att[i]
+		if val not in iDic:
+			iDic[val] = [i]
+		else:
+			iDic[val].append(i)
+	#Calculate information gain 
+	for key in iDic:
+		val = iDic[key]
+		p_i = (float(len(val))/float(len(s)))
+		newEntropy += p_i*entropy(s, val)
+	return oldEntropy - newEntropy
 
 if __name__ == "__main__":
     main()

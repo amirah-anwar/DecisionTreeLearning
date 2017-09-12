@@ -1,5 +1,5 @@
 (Occupied, Price, Music, Location, VIP, Favorite Beer, Enjoy)
 
-01, High, No,
-02, High, Yes,
-03, Moderate, Yes,
+01, High, Yes, No, 
+02, High, No, Yes,  
+03, Moderate, No, Yes,  
