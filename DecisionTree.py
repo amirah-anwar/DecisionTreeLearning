@@ -33,17 +33,20 @@ def main():
     # print "attributes", attributes
     # print "targetClass", targetClass		
     global result
-    global result_stack
-    global big_results
+    # global result_stack
+    # global big_results
+    global result_counter
 
     result = {}
-    result_stack = []
-    big_results = []
-    result = buildTree(examples, attributes, targetClass)
-    pprint(result_stack)
-
+    result_counter = {}
+    counter = 0
+    # result_stack = []
+    # big_results = []
+    result = buildTree(examples, attributes, targetClass, counter)
+    # pprint(result_stack)
+    pprint(result_counter)
 # =============Method Definitions===========================
-def buildTree(examples, attributes, target):
+def buildTree(examples, attributes, target, counter):
 
 	global result
 	# print "original data", examples
@@ -65,10 +68,32 @@ def buildTree(examples, attributes, target):
 	# 	return node
 	if (len(set(target)) == 2) or (len(target) == 1):
 		value = np.delete(target, 0)
-		result_stack.append(set(value))
-		createPath(result_stack)
-		result_stack.pop()
-		return value
+		# result_stack.append(set(value))
+		# createPath(result_stack)
+		# result_stack.pop()
+		counter += 1
+		if str(counter) not in result_counter:
+			result_counter[str(counter)] = [value[0]]
+		else:
+			result_counter[str(counter)].append(value[0])
+		print "(len(set(target)) == 2) or (len(target) == 1) point", result_counter, "counter", counter
+		return counter
+
+	if len(attributes) == 1:
+		if str(counter) not in result_counter:
+			result_counter[str(counter)] = ['Yes']
+		else:
+			result_counter[str(counter)].append('Yes')
+		print "len(attributes) == 0 point", result_counter, "counter", counter
+		return counter
+
+	if len(examples) == 1:
+		if str(counter) not in result_counter:
+			result_counter[str(counter)] = ['Yes']
+		else:
+			result_counter[str(counter)].append('Yes')
+		print "len(examples) == 1", result_counter, "counter", counter
+		return counter
 
 	temp_gain = []
 	for attr in examples.T:
@@ -76,58 +101,109 @@ def buildTree(examples, attributes, target):
 			continue
 		temp_gain.append(informationGain(target, attr))
 	gain = np.array(temp_gain)
-	# print "gain", gain
+	print "gain", gain
 
 	# if np.all(gain == 0):
-	# 	value = np.delete(target, 0)
-	# 	result_stack.append(set(value))
-	# 	createPath(result_stack)
-	# 	result_stack.pop()
+		
 	# 	return np.delete(target, 0)
 
-	selected_attr_index = np.argmax(gain)
-	# print "selected attribute", selected_attr_index
+	if(len(gain) > 1):
+		selected_attr_index = np.argmax(gain[0: len(gain)-1])
+		print "selected attribute", selected_attr_index
+	else:
+		counter += 1
+		if str(counter) not in result_counter:
+			result_counter[str(counter)] = ['Tie']
+			print "choosing tie point", result_counter, "counter", counter, "chosen node", 'tie'
+		else:
+			result_counter[str(counter)].append('Tie')
+			print "choosing tie point", result_counter, "counter", counter, "chosen node", 'tie'
+		return
 
 	node = attributes[selected_attr_index]
-	result_stack.append(node)
+	counter += 1
+	if str(counter) not in result_counter:
+		result_counter[str(counter)] = [node]
+	else:
+		result_counter[str(counter)].append(node)
+	print "choosing node point", result_counter, "counter", counter, "chosen node", node
 
 	indices = partitionSet(examples, selected_attr_index)
-	# print "indices of partition", indices
+	print "indices of partition", indices
 
-	if set(indices.keys()) != attValDic[node]:
-		result_stack.append('Yes')
-		createPath(result_stack)
-		result_stack.pop()
+	# temp_examples = []
+	temp_counter = counter + 1
+	print "temp_counter before entering for loop", temp_counter
+	for i in range(len(attValDic[node])):
+		v_i = attValDic[node][i]
+		print "in for loop"
+		print "i", i
+		print "v_i", v_i
+		print "in for loop counter", counter
+		print "in for loop temp_counter", temp_counter
 
+		if v_i not in indices.keys():
+			if temp_counter == None:
+				temp_counter = counter + 1
+			if str(temp_counter) not in result_counter:
+				result_counter[str(temp_counter)] = ['Yes']
+			else:
+				result_counter[str(temp_counter)].append('Yes')
+			print "v_i not in indices.keys()", result_counter, "temp_counter", temp_counter
+		else:
+			print "in recursive loop"
+			index = indices[v_i]
+			print "index", index
+			temp = examples[index]
+			print "examples of index", temp
 
-	temp_examples = []
-  	for key, index in indices.items():
-   		if key not in attValDic[node]:
-   			createPath(result_stack)
-   			# print result
-   		else:
-   			# print "index", index
-   			# print "examples", examples
-   			
-   			temp = examples[index]
-   			# print "rows with that index", temp
-   			
-   			temp_examples_final = np.delete(temp, selected_attr_index, axis=1)
-   			attributes = np.delete(attributes, selected_attr_index)
-   			# print "after deletion temp_examples_final", temp_examples_final
-   			# print "after deletion attributes", attributes
-
-	  		examples_subset = temp_examples_final[:, 0:temp_examples_final.shape[1]]
+			temp_examples_final = np.delete(temp, selected_attr_index, axis=1)
+ 			attributes_copy = np.delete(attributes, selected_attr_index)
+ 			print "temp_examples_final", temp_examples_final
+	   		print 'attributes', attributes_copy
+ 			examples_subset = temp_examples_final[:, 0:temp_examples_final.shape[1]]
 	   		target_subset = temp_examples_final[:, temp_examples_final.shape[1]-1]
-	   		# print "examples_subset", examples_subset
-	   		# print 'target_subset', target_subset
-   			print "node", node
-   			print "key", key
-   			result["%s = %s" % (node, key)] = buildTree(examples_subset, attributes, target_subset)
-   			result_stack.pop()
-   			print result
+	   		print "examples_subset", examples_subset
+	   		print 'target_subset', target_subset
+	   		temp_counter = buildTree(examples_subset, attributes_copy, target_subset, counter)
 
-   	return result
+	# if set(indices.keys()) != set(attValDic[node]):
+	# 	out = list(set(attValDic[node]) - set(indices.keys()))
+	# 	for i in range(len(out)):
+	# 		if str(counter) not in result_counter:
+	# 			result_counter[str(counter)] = ['Yes']
+	# 		else:
+	# 			result_counter[str(counter)].append('Yes')
+	# 	return
+
+	# temp_examples = []
+ #  	for key, index in indices.items():
+ #   		# if key not in attValDic[node]:
+ #   		# 	createPath(result_stack)
+ #   		# 	# print result
+ #   		# else:
+ #   			# print "index", index
+ #   			# print "examples", examples
+   			
+ #   		temp = examples[index]
+ #   			# print "rows with that index", temp
+   			
+ #   		temp_examples_final = np.delete(temp, selected_attr_index, axis=1)
+ # 		attributes = np.delete(attributes, selected_attr_index)
+ #   		# print "after deletion temp_examples_final", temp_examples_final
+ #   			# print "after deletion attributes", attributes
+
+	#   	examples_subset = temp_examples_final[:, 0:temp_examples_final.shape[1]]
+	#    	target_subset = temp_examples_final[:, temp_examples_final.shape[1]-1]
+	#    		# print "examples_subset", examples_subset
+	#    		# print 'target_subset', target_subset
+ #   		print "node", node
+ #   		print "key", key
+ #   		result["%s = %s" % (node, key)] = buildTree(examples_subset, attributes, target_subset, counter)
+ #   		# result_stack.pop()
+ #   		print result
+
+   	return
 
 def createPath(list):
 	temp = list
