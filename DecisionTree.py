@@ -1,10 +1,13 @@
 import numpy as np
-
+from pprint import pprint
+# ==============Gloabl Vars==================================
+attValDic = {'Occupied': ['High', 'Moderate', 'Low'], 'Price': ['Expensive', 'Normal', 'Cheap'], 
+'Music': ['Loud', 'Quiet'], 'Location': ['Talpiot', 'City-Center', 'German-Colony', 'Ein-Karem','Mahane-Yehuda'],
+'VIP': ['Yes', 'No'], 'Favorite Beer': ['Yes', 'No']};
 
 # Calculate Entropy of entire data
 # Calculate Entropy of each subset within an attribute
 # Calculate Information gain of each level or attribute
-
 def main():
     # ==============Process Data==================================
     # Get rid of the first column, may not be needed
@@ -12,7 +15,7 @@ def main():
     	filedata = f.read()
 	filedata = filedata.replace(':', ',')
 	filedata = filedata.replace(';', ', ')
-	filedata = filedata.replace('(', 'h,  ')
+	filedata = filedata.replace('(', 'h, ')
 	filedata = filedata.replace(')', ', ')
 
 	with open('dt-data.txt', 'w') as f:
@@ -20,74 +23,119 @@ def main():
 
 	#load txt file into a ndarray
 	data = np.loadtxt('dt-data.txt', dtype='string', delimiter=', ', usecols=(1,2,3,4,5,6,7))
-	#classification column
-	targetClass = data[:,6]			
- 
-    # Create Tuples of (feature, classification)
-    # occupiedTup = zip(data[:, 0], targetClass)
-    # priceTup = zip(data[:, 1], targetClass)
-    # musicTup = zip(data[:, 2], targetClass)
-    # locationTup = zip(data[:, 3], targetClass)
-    # vipTup = zip(data[:, 4], targetClass)
-    # beerTup = zip(data[:, 5], targetClass)
 
-    attrs = data[:, 0:7]
-    # print attrs.T
-    # print targetClass
-    result = buildTree(attrs,targetClass)
-    print result
+	#classification columns
+	examples = data[:, 0:7]
+    attributes = data[0, :]
+    targetClass = data[:, 6]	
+
+    # print "examples", examples
+    # print "attributes", attributes
+    # print "targetClass", targetClass		
+    global result
+    global result_stack
+    global big_results
+
+    result = {}
+    result_stack = []
+    big_results = []
+    result = buildTree(examples, attributes, targetClass)
+    pprint(result_stack)
 
 # =============Method Definitions===========================
-def buildTree(attrs, target):
+def buildTree(examples, attributes, target):
 
-	if (len(set(target)) == 1) or (len(target) == 0):
-		return target
+	global result
+	# print "original data", examples
+	# if np.all(target == 'Yes'):
+	# 	result_stack.append('Yes')
+	# 	createPath(result_stack)
+	# 	result_stack.pop()
+	# 	return 'Yes'
+	# if np.all(target == 'No'):
+	# 	result_stack.append('No')
+	# 	createPath(result_stack)
+	# 	result_stack.pop()
+	# 	return 'No'
+	# if len(attributes) == 0:
+	# 	value = np.delete(target, 0)
+	# 	result_stack.append(set(value))
+	# 	createPath(result_stack)
+	# 	result_stack.pop()
+	# 	return node
+	if (len(set(target)) == 2) or (len(target) == 1):
+		value = np.delete(target, 0)
+		result_stack.append(set(value))
+		createPath(result_stack)
+		result_stack.pop()
+		return value
 
-	gain = []
-	print "original data", attrs
-	for attr in attrs.T:
+	temp_gain = []
+	for attr in examples.T:
 		if attr[0] == 'Enjoy':
 			continue
-		gain.append(informationGain(target, attr))
-	print "gain", gain
+		temp_gain.append(informationGain(target, attr))
+	gain = np.array(temp_gain)
+	# print "gain", gain
 
-	if np.all(gain < 1e-6):
-		return target
+	# if np.all(gain == 0):
+	# 	value = np.delete(target, 0)
+	# 	result_stack.append(set(value))
+	# 	createPath(result_stack)
+	# 	result_stack.pop()
+	# 	return np.delete(target, 0)
 
 	selected_attr_index = np.argmax(gain)
-	print "selected attr", selected_attr_index
+	# print "selected attribute", selected_attr_index
 
-	indices = partitionSet(attrs, selected_attr_index)
-	print "indices of partition", indices
+	node = attributes[selected_attr_index]
+	result_stack.append(node)
 
-	temp_attrs = []
-	result = []
-  	for index in indices:
-  		print "index", index
-  		temp = attrs[index]
-  		print "rows with that index", temp
-  		temp_attrs_final = np.delete(temp, selected_attr_index, axis=1)
-  		print "after deletion", temp_attrs_final
-  		attrs_subset = temp_attrs_final[:, 0:temp_attrs_final.shape[1]]
-   		target_subset = temp_attrs_final[:, temp_attrs_final.shape[1]-1]
-   		# result.append(temp_attrs_final[0, selected_attr_index])
-   		print "attrs_subset", attrs_subset
-   		print 'target_subset', target_subset
-   		buildTree(attrs_subset, target_subset)
-  		# temp_attrs.append(temp_attrs_final)
+	indices = partitionSet(examples, selected_attr_index)
+	# print "indices of partition", indices
 
-  	print "final for next iteration", temp_attrs
-  	# for arr in temp_attrs:
-  	# 	print "arr", arr
-   # 		attrs_subset = arr[:, 0:arr.shape[1]]
-   # 		target_subset = arr[:, arr.shape[1]-1]
-   # 		result.append(arr[0, selected_attr_index])
-   # 		print "attrs_subset", attrs_subset
-   # 		print 'target_subset', target_subset
-   # 		buildTree(attrs_subset, target_subset)
+	if set(indices.keys()) != attValDic[node]:
+		result_stack.append('Yes')
+		createPath(result_stack)
+		result_stack.pop()
 
-   	return result.append(attrs[0,selected_attr_index])
-	
+
+	temp_examples = []
+  	for key, index in indices.items():
+   		if key not in attValDic[node]:
+   			createPath(result_stack)
+   			# print result
+   		else:
+   			# print "index", index
+   			# print "examples", examples
+   			
+   			temp = examples[index]
+   			# print "rows with that index", temp
+   			
+   			temp_examples_final = np.delete(temp, selected_attr_index, axis=1)
+   			attributes = np.delete(attributes, selected_attr_index)
+   			# print "after deletion temp_examples_final", temp_examples_final
+   			# print "after deletion attributes", attributes
+
+	  		examples_subset = temp_examples_final[:, 0:temp_examples_final.shape[1]]
+	   		target_subset = temp_examples_final[:, temp_examples_final.shape[1]-1]
+	   		# print "examples_subset", examples_subset
+	   		# print 'target_subset', target_subset
+   			print "node", node
+   			print "key", key
+   			result["%s = %s" % (node, key)] = buildTree(examples_subset, attributes, target_subset)
+   			result_stack.pop()
+   			print result
+
+   	return result
+
+def createPath(list):
+	temp = list
+	output = []
+	for item in temp:
+		output.append(item)
+	big_results.append(output)	
+
 def partitionSet(table, colIndex):
 	#select the specified colum
 	selectedCol = table[:, colIndex]
@@ -102,11 +150,10 @@ def partitionSet(table, colIndex):
 		else:
 			dic[val].append(i)
 	for key in dic:
-
 		modified = dic[key]
 		modified.insert(0,0)
-		listOfIndices.append(modified)
-	return listOfIndices
+		dic[key] = modified
+	return dic
 
 def entropy(currSet, indices):
 
