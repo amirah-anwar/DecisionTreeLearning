@@ -1,5 +1,7 @@
 import numpy as np
 from pprint import pprint
+import collections
+
 # ==============Gloabl Vars==================================
 attValDic = {'Occupied': ['High', 'Moderate', 'Low'], 'Price': ['Expensive', 'Normal', 'Cheap'], 
 'Music': ['Loud', 'Quiet'], 'Location': ['Talpiot', 'City-Center', 'German-Colony', 'Ein-Karem','Mahane-Yehuda'],
@@ -44,7 +46,11 @@ def main():
     # big_results = []
     result = buildTree(examples, attributes, targetClass, counter)
     # pprint(result_stack)
-    pprint(result_counter)
+    # pprint(result_counter)
+    sorted_output = collections.OrderedDict(sorted(result_counter.items()))
+    for i in range(len(sorted_output)):
+    	string = ', '.join(sorted_output[i+1])
+    	print string
 # =============Method Definitions===========================
 def buildTree(examples, attributes, target, counter):
 
@@ -72,26 +78,26 @@ def buildTree(examples, attributes, target, counter):
 		# createPath(result_stack)
 		# result_stack.pop()
 		counter += 1
-		if str(counter) not in result_counter:
-			result_counter[str(counter)] = [value[0]]
+		if (counter) not in result_counter:
+			result_counter[(counter)] = [value[0]]
 		else:
-			result_counter[str(counter)].append(value[0])
+			result_counter[(counter)].append(value[0])
 		print "(len(set(target)) == 2) or (len(target) == 1) point", result_counter, "counter", counter
 		return counter
 
 	if len(attributes) == 1:
-		if str(counter) not in result_counter:
-			result_counter[str(counter)] = ['Yes']
+		if (counter) not in result_counter:
+			result_counter[(counter)] = ['Yes']
 		else:
-			result_counter[str(counter)].append('Yes')
+			result_counter[(counter)].append('Yes')
 		print "len(attributes) == 0 point", result_counter, "counter", counter
 		return counter
 
 	if len(examples) == 1:
-		if str(counter) not in result_counter:
-			result_counter[str(counter)] = ['Yes']
+		if (counter) not in result_counter:
+			result_counter[(counter)] = ['Yes']
 		else:
-			result_counter[str(counter)].append('Yes')
+			result_counter[(counter)].append('Yes')
 		print "len(examples) == 1", result_counter, "counter", counter
 		return counter
 
@@ -112,20 +118,20 @@ def buildTree(examples, attributes, target, counter):
 		print "selected attribute", selected_attr_index
 	else:
 		counter += 1
-		if str(counter) not in result_counter:
-			result_counter[str(counter)] = ['Tie']
+		if (counter) not in result_counter:
+			result_counter[(counter)] = ['Tie']
 			print "choosing tie point", result_counter, "counter", counter, "chosen node", 'tie'
 		else:
-			result_counter[str(counter)].append('Tie')
+			result_counter[(counter)].append('Tie')
 			print "choosing tie point", result_counter, "counter", counter, "chosen node", 'tie'
 		return
 
 	node = attributes[selected_attr_index]
 	counter += 1
-	if str(counter) not in result_counter:
-		result_counter[str(counter)] = [node]
+	if (counter) not in result_counter:
+		result_counter[(counter)] = [node]
 	else:
-		result_counter[str(counter)].append(node)
+		result_counter[(counter)].append(node)
 	print "choosing node point", result_counter, "counter", counter, "chosen node", node
 
 	indices = partitionSet(examples, selected_attr_index)
@@ -145,10 +151,10 @@ def buildTree(examples, attributes, target, counter):
 		if v_i not in indices.keys():
 			if temp_counter == None:
 				temp_counter = counter + 1
-			if str(temp_counter) not in result_counter:
-				result_counter[str(temp_counter)] = ['Yes']
+			if (temp_counter) not in result_counter:
+				result_counter[(temp_counter)] = ['Yes']
 			else:
-				result_counter[str(temp_counter)].append('Yes')
+				result_counter[(temp_counter)].append('Yes')
 			print "v_i not in indices.keys()", result_counter, "temp_counter", temp_counter
 		else:
 			print "in recursive loop"
@@ -170,10 +176,10 @@ def buildTree(examples, attributes, target, counter):
 	# if set(indices.keys()) != set(attValDic[node]):
 	# 	out = list(set(attValDic[node]) - set(indices.keys()))
 	# 	for i in range(len(out)):
-	# 		if str(counter) not in result_counter:
-	# 			result_counter[str(counter)] = ['Yes']
+	# 		if (counter) not in result_counter:
+	# 			result_counter[(counter)] = ['Yes']
 	# 		else:
-	# 			result_counter[str(counter)].append('Yes')
+	# 			result_counter[(counter)].append('Yes')
 	# 	return
 
 	# temp_examples = []
