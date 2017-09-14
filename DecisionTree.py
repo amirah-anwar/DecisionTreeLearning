@@ -59,9 +59,9 @@ def buildTree(examples, attributes, target, counter):
 		pushNode(counter, value[0])
 		return counter
 
-	# if len(attributes) == 1:
-	# 	pushNode(counter, 'Yes')
-	# 	return counter
+	if len(attributes) == 1:
+		pushNode(counter+1, 'Tie')
+		return counter
 
 	# if len(examples) == 1:
 	# 	pushNode(counter, 'Yes')
@@ -79,9 +79,11 @@ def buildTree(examples, attributes, target, counter):
 	if(len(gain) > 1):
 		selected_attr_index = np.argmax(gain[0: len(gain)-1])
 	else: #if there is tie between Yes or No in the last remaining attribute
-		counter += 1
-		pushNode(counter, 'Tie')
-		return
+		selected_attr_index = np.argmax(gain[0])
+		# print "examples", examples
+		# counter += 1
+		# pushNode(counter, 'Tie')
+		# return
 
 	#add the selected node in decision tree
 	node = attributes[selected_attr_index]
